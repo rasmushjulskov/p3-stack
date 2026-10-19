@@ -20,7 +20,13 @@ const ADAPTER_SOURCE = join(ROOT, "docs", "harness", "t3-code.md");
 const ADAPTER = "docs/harness/t3-code.md";
 const HARNESS = "pstack-t3";
 const COMMAND = "node scripts/generate.mjs";
-const LINK = /\]\(([^)\s]+)\)/g;
+// Inline links, with or without a title, and reference definitions. The destination is group 2.
+const LINK = /(\]\(<?)([^)\s>]+)(>?(?:\s+(?:"[^"]*"|'[^']*'))?\))|(^[ ]{0,3}\[[^\]]+\]:[ \t]*<?)([^\s>]+)/gm;
+function rewriteLinks(text, rewrite) {
+  return text.replace(LINK, (whole, open, inline, close, refOpen, ref) =>
+    inline !== undefined ? `${open}${rewrite(inline)}${close}` : `${refOpen}${rewrite(ref)}`,
+  );
+}
 
 // Each key must appear verbatim in the first cell of an adapter row, or in a heading. A skill whose text matches any pattern gets the adapter line.
 const TERMS = [
@@ -48,7 +54,9 @@ const TERMS = [
   { key: ".cursor/worktrees/", re: /\.cursor\/worktrees/ },
   { key: "The current agent's store", re: /agent's store|agent store/ },
   { key: "agent-transcripts", re: /agent-transcripts|\.cursor\/projects/ },
+  { key: "`pstack/skills/<path>`", re: /\bpstack\/skills\// },
   { key: "/loop", re: /\/loop\b/ },
+  { key: "make-bot-ui", re: /Grok Bot|X-Automation-Key|Routines list/ },
   { key: "Bugbot", re: /Bugbot/ },
   { key: "Cursor Automations", re: /Cursor [Aa]utomation|cursor\.(sh|com)\/automations|update_state|SendToUser|scheduled automation|automation pack/ },
   { key: "cloud agent", re: /[Cc]loud[- ][Aa]gent|cloud VM|Cursor dashboard/ },
@@ -59,6 +67,8 @@ const TERMS = [
   { key: "Custom Modes", re: /[Cc]ustom [Mm]odes?|[Oo]ption\+[Ee]nter|Agents Window|Plan Mode/ },
   { key: "Any other Cursor name", re: /\bCursor\b/ },
 ];
+
+const SCRIPT_TERM = { key: "A bundled script that reads `~/.cursor/`", re: /\.cursor\// };
 
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
@@ -141,6 +151,11 @@ function place(path) {
   return undefined;
 }
 
+if (flag("--check") && (flag("--bump") || flag("--source"))) {
+  console.log("FAIL --check verifies the committed pin. Run it without --bump or --source.");
+  process.exit(1);
+}
+
 const lock = flag("--bump") ? bump(option("--bump") && !option("--bump").startsWith("--") ? option("--bump") : "main") : readLock();
 const SOURCE = option("--source") ?? checkout(lock);
 const GITHUB = `${lock.repository.replace(/\.git$/, "")}`;
@@ -169,6 +184,10 @@ for (const skill of skills) {
     const text = readFileSync(path, "utf8");
     for (const term of TERMS) if (term.re.test(text)) used.add(term.key);
     if (namesBareSkill(skill, text)) used.add(ROUTE_KEY);
+  }
+  // Bundled scripts cannot read the adapter, so a Cursor path in one needs its own row.
+  for (const path of walk(join(SOURCE, "skills", skill)).filter((path) => !path.endsWith(".md"))) {
+    if (SCRIPT_TERM.re.test(readFileSync(path, "utf8"))) used.add(SCRIPT_TERM.key);
   }
   usage.set(`skills/${skill}/SKILL.md`, used);
 }
@@ -208,6 +227,9 @@ function adapterLine(from) {
 }
 
 const mapped = [];
+const broken = [];
+// A bare word such as `url` is a template placeholder, not a file.
+const placeholder = (target) => !/[./]/.test(target);
 
 function render() {
   // Keyed by pstack-relative path. Rewritten to tree paths at the end.
@@ -243,17 +265,23 @@ function render() {
     const at = place(path);
     if (!at) continue;
     if (path.endsWith(".md")) {
-      const text = entry.bytes.toString("utf8").replace(LINK, (link, href) => {
+      const text = rewriteLinks(entry.bytes.toString("utf8"), (href) => {
         const target = resolve(path, href);
-        if (!target) return link;
+        if (!target) {
+          const bare = href.replace(/[#?].*/, "");
+          if (bare && !/^[a-z][a-z0-9+.-]*:/i.test(bare) && !bare.startsWith("/") && !placeholder(bare)) {
+            broken.push(`${path} links to ${href}, which does not exist in pstack`);
+          }
+          return href;
+        }
         const suffix = href.slice(href.search(/[#?]|$/));
         const landed = place(target);
         if (landed) {
           mapped.push({ from: at, landed, href });
-          return `](${posix.relative(posix.dirname(at), landed) || "."}${suffix})`;
+          return `${posix.relative(posix.dirname(at), landed) || "."}${suffix}`;
         }
         const kind = statSync(join(SOURCE, target)).isDirectory() ? "tree" : "blob";
-        return `](${GITHUB}/${kind}/${option("--source") ? "main" : lock.commit}/${lock.path}/${target}${suffix})`;
+        return `${GITHUB}/${kind}/${option("--source") ? "main" : lock.commit}/${lock.path}/${target}${suffix}`;
       });
       entry.bytes = Buffer.from(text);
     }
@@ -267,6 +295,8 @@ function render() {
 }
 
 const { tree, wrapped } = render();
+
+for (const link of broken) problems.push(link);
 
 // Every link that resolved in pstack must still resolve in the tree.
 for (const { from, landed, href } of mapped) {

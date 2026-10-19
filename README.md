@@ -7,7 +7,7 @@ pstack is poteto's answer to AI slop code. It turns an agent into an engineering
 p3-stack ships pstack's skills unchanged, plus one adapter, [`docs/harness/t3-code.md`](docs/harness/t3-code.md), that maps every Cursor name in them to T3 Code's tools. This is the same shape pstack uses for Claude Code. Following pstack is a version bump, not a rewrite.
 
 - **Delegation.** `delegate_task` replaces Cursor's Task tool, with per-role providers and models resolved from `orchestrator_capabilities`. Cross-model panels are native.
-- **Worktrees.** `isolation: "worktree"` gives a worker its own checkout. `t3_thread_launch` gives a PR owner its own thread and branch.
+- **Worktrees.** `isolation: "worktree"` gives every worker, verifier, and PR owner its own checkout, and each still reports back to its parent.
 - **Watching.** `watch_pull_request` wakes the thread when checks finish, someone comments, or the branch conflicts. No polling loops.
 - **Scheduling.** `schedule_task` replaces `/loop` heartbeats and Cursor Automations, webhooks included.
 - **Memory.** `t3_thread_search` and `t3_thread_read` replace mining Cursor transcript files.
