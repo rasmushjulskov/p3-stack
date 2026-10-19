@@ -1,0 +1,41 @@
+name: sync pstack
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pin pstack main and regenerate
+        run: node scripts/generate.mjs --bump
+      - name: Open a PR when pstack moved
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then
+            echo "pstack is already pinned at main."
+            exit 0
+          fi
+          version=$(node -p 'require("./pstack.lock.json").version')
+          commit=$(node -p 'require("./pstack.lock.json").commit.slice(0, 7)')
+          branch="sync/pstack-$version-$commit"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "chore: sync pstack $version ($commit)" --quiet
+          git add -A && git commit --amend --no-edit --quiet
+          git push --force origin "$branch"
+          gh pr create --head "$branch" --title "chore: sync pstack $version" \
+            --body "Pins pstack to cursor/plugins@$commit and regenerates \`skills/\`. Read the upstream diff for new mechanics the adapter does not map yet." \
+            || echo "A PR for $branch is already open."

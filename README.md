@@ -1,15 +1,17 @@
 # p3-stack
 
-p3-stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) rebuilt for T3 Code. Same engineering discipline, native T3 orchestration.
+p3-stack is [pstack](https://github.com/cursor/plugins/tree/main/pstack) for T3 Code. Same engineering discipline, native T3 orchestration.
 
-pstack is poteto's answer to AI slop code. It turns an agent into an engineering team: one mode skill that routes to playbooks, principles that ground every decision, and verification strict enough that you can parallelize with confidence. p3-stack keeps that system and rewires the mechanics to T3 Code's primitives:
+pstack is poteto's answer to AI slop code. It turns an agent into an engineering team: one mode skill that routes to playbooks, principles that ground every decision, and verification strict enough that you can parallelize with confidence.
 
-- **Delegation.** `delegate_task` child agents replace Cursor's Task tool, with per-role providers and models resolved from `orchestrator_capabilities`. Cross-model panels are native.
-- **Worktrees.** `t3_thread_launch` binds a worker to its own worktree and branch. One writer per worktree, enforced by the app instead of by advice.
+p3-stack ships pstack's skills unchanged, plus one adapter, [`docs/harness/t3-code.md`](docs/harness/t3-code.md), that maps every Cursor name in them to T3 Code's tools. This is the same shape pstack uses for Claude Code. Following pstack is a version bump, not a rewrite.
+
+- **Delegation.** `delegate_task` replaces Cursor's Task tool, with per-role providers and models resolved from `orchestrator_capabilities`. Cross-model panels are native.
+- **Worktrees.** `isolation: "worktree"` gives a worker its own checkout. `t3_thread_launch` gives a PR owner its own thread and branch.
 - **Watching.** `watch_pull_request` wakes the thread when checks finish, someone comments, or the branch conflicts. No polling loops.
-- **Scheduling.** `schedule_task` runs audits and overnight cadences even when no turn is active. No `/loop`.
-- **Memory.** `t3_thread_read` and `t3_thread_search` replace mining Cursor transcript files.
-- **Proof.** `preview_*` browser tools and `device_*` simulators replace external control skills. Screenshots and recordings land in the thread.
+- **Scheduling.** `schedule_task` replaces `/loop` heartbeats and Cursor Automations, webhooks included.
+- **Memory.** `t3_thread_search` and `t3_thread_read` replace mining Cursor transcript files.
+- **Proof.** `preview_*` browser tools and `device_*` simulators replace `control-ui`. Screenshots and recordings land in the thread.
 
 ## Install
 
@@ -19,26 +21,38 @@ cd p3-stack
 ./install.sh
 ```
 
-`install.sh` links every `skills/*` directory into `~/.agents/skills/`, where T3 Code reads skills. Use `./install.sh --project /path/to/repo` to install into a project's `.agents/skills/` instead.
+`install.sh` links every `skills/*` directory into `~/.agents/skills/`, where T3 Code reads skills for every provider. Use `./install.sh --project /path/to/repo` to install into a project's `.agents/skills/` instead. Re-run it after you pull. It also removes links to skills that no longer exist.
 
 ## Get started
 
-1. Run `/setup-p3`. It reads `orchestrator_capabilities` and writes `p3-models.md`, mapping each role (code, judgment, the review panels) to a provider and model you actually have.
-2. Use `/p3-mode` whenever you want rigorous work. It reads the request, picks a playbook, and runs the other skills as the steps need them.
-3. Stuck or unsure which skill fits? Ask `/p3-help`.
+1. Run `/setup-pstack`. It reads `orchestrator_capabilities` and writes `~/.agents/pstack-models.md`, mapping each role (code, judgment, the review panels) to a provider and model you have.
+2. Use `/poteto-mode` whenever you want rigorous work. It reads the request, picks a playbook, and runs the other skills as the steps need them.
+3. Stuck or unsure which skill fits? Ask `/poteto-help`. The [pstack guide](skills/pstack-t3/guide/README.md) walks through a first real task.
 
-## The mode
+The commands keep pstack's names. Earlier versions of p3-stack renamed them (`/p3-mode`, `/setup-p3`, `/p3-help`). Those names are gone, and `install.sh` removes their links.
 
-`p3-mode` routes every task. Its playbooks: investigation, bug fix, perf issue, hillclimb, runtime forensics, trace forensics, feature, refactoring, prototype, visual parity, authoring a skill, eval, babysit, shipping, autonomous run, orchestrate, autopilot-full, autopilot-stack, session pickup, pause safely, multi-phase plan, worktree cleanup, opening a PR.
+## How it works
 
-## Skills
+```
+pstack.lock.json          the pstack commit this repo builds from
+docs/harness/t3-code.md   the T3 adapter, the only hand-written skill text
+scripts/generate.mjs      builds skills/ from those two
+skills/                   generated, committed so install needs no build step
+```
 
-architect, arena, automate-me, benchmark-checklist, blast-radius, bro, correct, create-verification-skill, figure-it-out, how, interrogate, maintain-verification-skill, make-bot-ui, no-comments, p3-help, recall, reflect, setup-p3, show-me-your-work, swarm, tdd, teach, technical-writing, typescript-best-practices, unslop, why.
+`scripts/generate.mjs` fetches pstack at the pinned commit and copies its skills, agent briefs, guide, and README into `skills/`. Every skill that uses a Cursor name gets one line under its heading pointing at the adapter, which lands at `skills/pstack-t3/SKILL.md`. Links between pstack files are rewritten to work in the installed tree, and links to files the tree leaves out point at the pinned commit on GitHub.
 
-## Principles
+The generator fails when a skill uses a Cursor name the adapter has no row for, when a skill's name differs from its folder, or when a link breaks. So a new pstack feature cannot slip through unmapped.
 
-The twenty-four principle skills are indexed inside `p3-mode` and referenced by the other skills by name.
+## Update pstack
 
-## Credit
+```bash
+node scripts/generate.mjs --bump    # pin pstack main, regenerate skills/
+node scripts/generate.mjs --check   # what CI runs
+```
 
-p3-stack adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack) by [poteto](https://x.com/poteto). The skills, principles, and language are hers; the T3 Code rewiring is this repo's. MIT, see [LICENSE](LICENSE).
+If `--bump` reports a missing row, add it to `docs/harness/t3-code.md` and run it again. A weekly workflow opens the bump as a PR.
+
+## Credits
+
+p3-stack adapts [pstack](https://github.com/cursor/plugins/tree/main/pstack) by [poteto](https://x.com/poteto). The skills, principles, and language are hers; the T3 Code adapter is this repo's. MIT, see [LICENSE](LICENSE).

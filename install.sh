@@ -12,6 +12,15 @@ fi
 mkdir -p "$TARGET"
 installed=0
 skipped=0
+pruned=0
+
+# Drop links into this repo whose skill no longer exists, such as the old p3-mode.
+for link in "$TARGET"/*; do
+  if [[ -L "$link" && ! -e "$link" && "$(readlink "$link")" == "$ROOT"/skills/* ]]; then
+    rm "$link"
+    pruned=$((pruned + 1))
+  fi
+done
 
 for skill in "$ROOT"/skills/*/; do
   name="$(basename "$skill")"
@@ -22,11 +31,14 @@ for skill in "$ROOT"/skills/*/; do
     skipped=$((skipped + 1))
     continue
   fi
-  ln -s "$skill" "$TARGET/$name"
+  ln -s "${skill%/}" "$TARGET/$name"
   installed=$((installed + 1))
 done
 
 printf 'linked %d skills into %s' "$installed" "$TARGET"
+if [[ "$pruned" -gt 0 ]]; then
+  printf ', removed %d stale links' "$pruned"
+fi
 if [[ "$skipped" -gt 0 ]]; then
   printf ' (%d skipped)' "$skipped"
 fi
