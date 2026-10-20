@@ -36,11 +36,12 @@ The commands keep pstack's names. Earlier versions of p3-stack renamed them (`/p
 ```
 pstack.lock.json          the pstack commit this repo builds from
 docs/harness/t3-code.md   the T3 adapter, the only hand-written skill text
-scripts/generate.mjs      builds skills/ from those two
+docs/harness/t3-code/     T3 versions of pstack examples, linked from the adapter
+scripts/generate.mjs      builds skills/ from those
 skills/                   generated, committed so install needs no build step
 ```
 
-`scripts/generate.mjs` fetches pstack at the pinned commit and copies its skills, agent briefs, guide, and README into `skills/`. Every skill that uses a Cursor name gets one line under its heading pointing at the adapter, which lands at `skills/pstack-t3/SKILL.md`. Links between pstack files are rewritten to work in the installed tree, and links to files the tree leaves out point at the pinned commit on GitHub.
+`scripts/generate.mjs` fetches pstack at the pinned commit and copies its skills, agent briefs, guide, and README into `skills/`. Every skill that uses a Cursor name gets one line under its heading pointing at the adapter, which lands at `skills/pstack-t3/SKILL.md`. The files in `docs/harness/t3-code/` land beside it in `skills/pstack-t3/`. Links between pstack files are rewritten to work in the installed tree, and links to files the tree leaves out point at the pinned commit on GitHub.
 
 The generator fails when a skill uses a Cursor name the adapter has no row for, when a skill's name differs from its folder, or when a link breaks. So a new pstack feature cannot slip through unmapped.
 

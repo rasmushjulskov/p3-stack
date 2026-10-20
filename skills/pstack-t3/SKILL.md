@@ -86,7 +86,7 @@ Run it in the operator's thread, not as a child, because it asks questions. Foll
 | The current agent's store (path in the system prompt) | `~/.agents/pstack-store/<repo-slug>/`. Create it. |
 | `pstack/skills/<path>` in a command, or `git show origin/main:pstack/skills/<path>` | `<skills>/<path>`, as an absolute path. The installed tree is the trunk copy, so read it with `cat`. Keep `git show origin/main:` for files in the working repo, such as a project verification skill or `AGENTS.md`. A plan needs at least one such line, because `check-plan.mjs` looks for it. |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | The local copy when this tree ships it: `<skills>/<name>/` for skills, `<skills>/pstack-t3/guide/` for `docs/guide/`, `<skills>/pstack-t3/README.md`, `<skills>/pstack-t3/agents/`. Read it and never fetch it. Give the user the URL when they need a link. |
-| Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | T3 threads. Find them with `t3_thread_search` or `t3_thread_list`. Read one with `t3_thread_read`, `view: "messages"` for the conversation or `"activity"` for tool calls. A delegated child's transcript is its `childThreadId`. A thread's last activity, not a file mtime, says whether it is live. |
+| Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | T3 threads. Find them with `t3_thread_search` or `t3_thread_list`. Read one with `t3_thread_read`, `view: "messages"` for the conversation or `"activity"` for tool calls. A delegated child's transcript is its `childThreadId`. A thread's last activity, not a file mtime, says whether it is live. Stay in this project, as the skills' rule against globbing across `~/.cursor/projects/*/` says. Omit `projectId`, so both tools use the calling thread's project, and never read another project's threads unless the user asks. `t3_thread_search` filters the app's global top matches to one project, so it can return fewer than `limit`. For a full sweep of a time window, page through `t3_thread_list`. |
 
 ## Waking and scheduling
 
@@ -102,6 +102,14 @@ Every schedule you create is program state. Record its id in the decision trail 
 ## make-bot-ui
 
 Skip the Routines panel, the sender key, and the credential file. Create the routine with `schedule_task` and `{"type":"webhook"}`. Its prompt names the JSON fields and reads them with `{{body.<field>}}`. The `webhookUrl` in the result is the secret: store it only in the server's config, never in the browser, chat, or a log. The server POSTs JSON with `Content-Type: application/json` and no auth header. A run is the wake, and the body arrives as untrusted data. Everything else in the skill holds.
+
+## Pause safely and Session pickup
+
+At a pause, stop running children with `task_cancel`. Messages sent while a thread is busy wait in its queue. On resume or pickup, read the thread with `t3_thread_read`, then list its queued messages with `t3_queue_list` and its `threadId`. A queued message can change the plan, so handle it before the resume note's first action.
+
+## create-verification-skill
+
+For a browser surface with no harness of its own, write each feature's driving section with the `preview_*` tools. Follow [the T3 version of the create-note example](examples/create-note.md) in place of the skill's `control-notes browser` example. It shows one tab per run, role locators, waits, and which `preview_snapshot` call gives which proof. A simulator surface uses the `device_*` tools in the same shape. `maintain-verification-skill` keeps maps in this shape.
 
 ## Cursor-only features
 
