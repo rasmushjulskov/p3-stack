@@ -12,7 +12,7 @@ In a Cursor chat, run:
 
 Cursor confirms the plugin is installed.
 
-In Claude Code, run `/plugin marketplace add cursor/plugins`, then `/plugin install pstack@cursor-plugins`. Claude Code prefixes plugin commands, so each command in this guide takes a `pstack:` prefix there, such as `/pstack:setup-pstack`, which writes its model rule to `~/.claude/rules/pstack-models.md`. The [Claude Code adapter](https://github.com/cursor/plugins/blob/d457567332aa6989e753ea289f30ea2bfbc80bc0/pstack/docs/harness/claude-code.md) covers the other differences.
+In Claude Code, run `/plugin marketplace add cursor/plugins`, then `/plugin install pstack@cursor-plugins`. Claude Code prefixes plugin commands, so each command in this guide takes a `pstack:` prefix there, such as `/pstack:setup-pstack`, which writes its model rule to `~/.claude/rules/pstack-models.md`. The [Claude Code adapter](https://github.com/cursor/plugins/blob/9f844cdaac06aeaa1b2d17fbcb57e078979c6f99/pstack/docs/harness/claude-code.md) covers the other differences.
 
 ## Pick your models
 

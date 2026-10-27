@@ -53,6 +53,7 @@ const TERMS = [
   { key: "pstack-models.mdc", re: /pstack-models\.mdc/ },
   { key: ".cursor/skills/", re: /\.cursor\/skills/ },
   { key: "~/.cursor/plugins/", re: /\.cursor\/plugins|\.cursor-plugin/ },
+  { key: "plugins/cache/", re: /plugins\/cache/ },
   { key: ".cursor/rules/", re: /\.cursor\/rules|always-applied rule/ },
   { key: ".cursor/worktrees/", re: /\.cursor\/worktrees/ },
   { key: "The current agent's store", re: /agent's store|agent store/ },
