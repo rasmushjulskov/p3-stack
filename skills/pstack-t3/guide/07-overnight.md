@@ -79,10 +79,10 @@ The contract above drives one task to one finish condition. Some nights hold mor
 /poteto-mode full autopilot on this queue. each item is independent. i want them merged by morning.
 ```
 
-[Autopilot-stack](../../poteto-mode/playbooks/autopilot-stack.md) runs the same owner loop but ships nothing. You wake up to one linear base-branch stack with a verifier's verdict on every link, and you review and land it yourself. Pick it over Autopilot-full when the changes are coupled, or when you want your own eyes on the work before anything merges:
+[Autopilot-stack](../../poteto-mode/playbooks/autopilot-stack.md) is Autopilot-full without the merge. You wake up to verified PRs, each with its verdict, and you review and land them yourself. A PR stacks only on a PR it builds on. Pick it over Autopilot-full when you want your own eyes on the work before anything merges:
 
 ```text
-/poteto-mode autopilot these five changes but stack them, don't ship. i'll land the stack in the morning.
+/poteto-mode autopilot these five changes, but don't merge. i'll land them in the morning.
 ```
 
 [Orchestrate](../../poteto-mode/playbooks/orchestrate.md) is for a program that outlives any single agent: multi-day, many stacked PRs, fleets of subagents under one standing coordinator chat. The coordinator authors briefs, collects what its subagents finish, keeps the lowest unmerged PR green, and never writes code itself. It's deliberately heavy machinery. If one agent could finish the work in a session, the playbook itself routes you back to the overnight contract above:
@@ -115,7 +115,7 @@ Every loop above still waits for you to start it. A scheduled or event-driven au
 - Every stage can stop the line. Triage can decide the report is expected behavior, repro can fail to reproduce it, and the fixer can judge the change too risky. Each of those outcomes is useful, because it keeps bad work from reaching the next stage, where it costs more to undo.
 - Every stage hands over evidence. Repro attaches screenshots and video of the broken state, and the fix attaches before-and-after proof. A human can then check that the agent fixed the right thing before reading a line of code.
 
-pstack ships this as a dormant [automation pack](https://github.com/cursor/plugins/blob/d457567332aa6989e753ea289f30ea2bfbc80bc0/pstack/automations/benny/README.md) for Slack issue reports. One automation triages each report. The other reproduces confirmed bugs and may prepare a small draft fix. Point an agent at its [`FOR_AGENTS.md`](https://github.com/cursor/plugins/blob/d457567332aa6989e753ea289f30ea2bfbc80bc0/pstack/automations/benny/FOR_AGENTS.md) and name the target repository to set it up.
+pstack ships this as a dormant [automation pack](https://github.com/cursor/plugins/blob/9f844cdaac06aeaa1b2d17fbcb57e078979c6f99/pstack/automations/benny/README.md) for Slack issue reports. One automation triages each report. The other reproduces confirmed bugs and may prepare a small draft fix. Point an agent at its [`FOR_AGENTS.md`](https://github.com/cursor/plugins/blob/9f844cdaac06aeaa1b2d17fbcb57e078979c6f99/pstack/automations/benny/FOR_AGENTS.md) and name the target repository to set it up.
 
 **Pitfall:** a duration is not a finish condition. "work on this for 4 hours" gives the agent nothing to check, and you'll wake up to four hours of motion instead of a result. Give `/loop` a predicate that can pass or fail.
 

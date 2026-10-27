@@ -72,6 +72,7 @@ Run it in the operator's thread, not as a child, because it asks questions. Foll
 | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | `.agents/skills/`, `~/.agents/skills/` |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | `<skills>`. pstack's version is in `<skills>/pstack-t3/pstack.json`. |
+| `plugins/cache/` | The installed pstack skills in `<skills>`. Never edit one, because the next install rewrites it. Copy the skill to the project's `.agents/skills/<skill>/` and edit the copy. `~/.agents/skills/<skill>/` is the installed skill itself, so never copy there. |
 | `.cursor/rules/*.mdc`, always-applied rules | The repo's `AGENTS.md`, or `CLAUDE.md` when the repo keeps its rules there. The model rule is the exception. See Models. |
 | `.cursor/worktrees/` | The worktrees `git worktree list` shows. `t3_worktree_list` and `t3_worktree_status` add which T3 thread uses one, but leave out detached worktrees. |
 | A bundled script that reads `~/.cursor/` | Trust only its git columns. `poteto-mode/scripts/worktree-audit.sh` reads chat age from Cursor transcripts, so in T3 its chat column is empty and a `safe` bucket is unproven. Before you remove a worktree, confirm with `git worktree list` and `t3_thread_list` that no thread or delegated child is live in it. |
