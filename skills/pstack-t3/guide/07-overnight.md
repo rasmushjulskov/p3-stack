@@ -71,7 +71,7 @@ For a quick status instead of an audit, run [`/ketchup`](../../ketchup/SKILL.md)
 
 ## When the night holds a queue, not a task
 
-The contract above drives one task to one finish condition. Some nights hold more, a queue of independent changes or a whole program. Three playbooks scale the same trust up.
+The contract above drives one task to one finish condition. Some nights hold more, a queue of independent changes or a whole program. Two playbooks and one skill scale the same trust up.
 
 [Autopilot-full](../../poteto-mode/playbooks/autopilot-full.md) runs a queue of independent PRs to merged. Each PR gets one owner agent that carries it from build through merge, and no owner merges on its own verdict. A swarm of fresh verifiers checks the owner's code-ready head. A later rebase or minor fix gets one fresh verifier, and only new behavior or a large new diff calls the full swarm again. Only a clean verdict on the patch that merges authorizes the merge:
 
@@ -85,15 +85,15 @@ The contract above drives one task to one finish condition. Some nights hold mor
 /poteto-mode autopilot these five changes, but don't merge. i'll land them in the morning.
 ```
 
-[Orchestrate](../../poteto-mode/playbooks/orchestrate.md) is for a program that outlives any single agent: multi-day, many stacked PRs, fleets of subagents under one standing coordinator chat. The coordinator authors briefs, collects what its subagents finish, keeps the lowest unmerged PR green, and never writes code itself. It's deliberately heavy machinery. If one agent could finish the work in a session, the playbook itself routes you back to the overnight contract above:
+A whole program, such as a migration across many packages, has no playbook of its own. `/poteto-mode` routes large or cross-cutting work to [`/figure-it-out`](../../figure-it-out/SKILL.md), which designs one rigorous run for it:
 
 ```text
-/poteto-mode orchestrate the store migration. own it until every package is converted and merged. i'll check in twice a day.
+/poteto-mode migrate every package to the new store. own it until each one is converted and merged. i'll check in twice a day.
 ```
 
 ## Run many projects in parallel
 
-A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, which run in the cloud by default, so the work continues when your laptop is closed. That's the shape the Orchestrate playbook expects. Start your prompts to the coordinator with `/poteto-mode`, and the subagents it spawns follow the playbooks.
+A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, which run in the cloud by default, so the work continues when your laptop is closed. Start your prompts to the coordinator with `/poteto-mode`, and the subagents it spawns follow the playbooks. Each agent it starts reads [`worker.md`](../../poteto-mode/worker.md) first, so workers hold to the kickoff's bar, decide reversible calls instead of asking you, and open PRs ready for review.
 
 A few habits help:
 
@@ -115,7 +115,7 @@ Every loop above still waits for you to start it. A scheduled or event-driven au
 - Every stage can stop the line. Triage can decide the report is expected behavior, repro can fail to reproduce it, and the fixer can judge the change too risky. Each of those outcomes is useful, because it keeps bad work from reaching the next stage, where it costs more to undo.
 - Every stage hands over evidence. Repro attaches screenshots and video of the broken state, and the fix attaches before-and-after proof. A human can then check that the agent fixed the right thing before reading a line of code.
 
-pstack ships this as a dormant [automation pack](https://github.com/cursor/plugins/blob/9f844cdaac06aeaa1b2d17fbcb57e078979c6f99/pstack/automations/benny/README.md) for Slack issue reports. One automation triages each report. The other reproduces confirmed bugs and may prepare a small draft fix. Point an agent at its [`FOR_AGENTS.md`](https://github.com/cursor/plugins/blob/9f844cdaac06aeaa1b2d17fbcb57e078979c6f99/pstack/automations/benny/FOR_AGENTS.md) and name the target repository to set it up.
+pstack ships this as a dormant [automation pack](https://github.com/cursor/plugins/blob/ca782ed8b3c2c521cead8e1720d55c3a5dbf2347/pstack/automations/benny/README.md) for Slack issue reports. One automation triages each report. The other reproduces confirmed bugs and may prepare a small draft fix. Point an agent at its [`FOR_AGENTS.md`](https://github.com/cursor/plugins/blob/ca782ed8b3c2c521cead8e1720d55c3a5dbf2347/pstack/automations/benny/FOR_AGENTS.md) and name the target repository to set it up.
 
 **Pitfall:** a duration is not a finish condition. "work on this for 4 hours" gives the agent nothing to check, and you'll wake up to four hours of motion instead of a result. Give `/loop` a predicate that can pass or fail.
 
