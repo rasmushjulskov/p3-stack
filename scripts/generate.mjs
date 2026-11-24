@@ -48,6 +48,7 @@ const TERMS = [
   { key: "`file_attachments`", re: /file_attachments/ },
   { key: "claude-", re: /\bclaude-[a-z]+-\d/ },
   { key: "grok-", re: /\b(cursor-)?grok-\d|\bcomposer-/ },
+  { key: "gemini-", re: /\bgemini-\d/ },
   { key: "gpt-", re: /\bgpt-\d/ },
   { key: "inherit-parent", re: /inherit-parent|`auto`/ },
   { key: "pstack-models.mdc", re: /pstack-models\.mdc/ },
@@ -68,6 +69,7 @@ const TERMS = [
   { key: "control-ui", re: /control-(ui|cli)/ },
   { key: "cursor-team-kit", re: /cursor-team-kit|`deslop`|\/deslop/ },
   { key: "create-skill", re: /\bcreate-skill\b/ },
+  { key: "Cursor Project", re: /Cursor Projects?\b|Project workers?\b/ },
   { key: "Custom Modes", re: /[Cc]ustom [Mm]odes?|[Oo]ption\+[Ee]nter|Agents Window|Plan Mode/ },
   { key: "Any other Cursor name", re: /\bCursor\b/ },
 ];
